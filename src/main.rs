@@ -1,4 +1,4 @@
-mod db;
+// mod db;
 mod lang;
 
 use lang::lexer::Lexer;
@@ -10,7 +10,7 @@ fn main() {
     .to_string();
 
     let mut scanner = Lexer::new(source);
-    let tokens = scanner.scan_tokens();
+    let tokens = scanner.get_tokens();
     for token in tokens {
         println!("{:?}", token);
     }

@@ -1,58 +1,83 @@
 use crate::lang::token::Token;
-use std::collections::HashSet;
+
+use super::token::RegexToken;
+use regex::Regex;
 
 pub struct Lexer {
     source: String,
+    pos: usize,
     tokens: Vec<Token>,
-    current: String,
 }
 
 impl Lexer {
     pub fn new(source: String) -> Lexer {
         Lexer {
             source,
+            pos: 0,
             tokens: Vec::new(),
-            current: String::new(),
         }
     }
 
-    pub fn scan_tokens(&mut self) -> Vec<Token> {
-        let breaks: HashSet<char> = HashSet::from([' ', '\t', '\r', '\n', '(', ')', ',']);
-        for i in 0..self.source.len() {
-            let c = self.source.chars().nth(i).unwrap();
-            if breaks.contains(&c) {
-                if self.current != "" {
-                    self.process_string();
-                    self.current.clear();
-                }
-                self.process_char(c);
-                self.current.clear();
-            } else {
-                self.current.push(c);
+    pub fn get_tokens(&mut self) -> Vec<Token> {
+        while self.pos < self.source.len() {
+            if !self.get_token() {
+                println!("{:?}", &self.tokens);
+                println!("{}", &self.source[self.pos..]);
+                panic!("Unexpected character at: {}", self.pos);
             }
         }
 
-        self.tokens.clone()
+        return self.tokens.clone();
     }
 
-    fn process_string(&mut self) {
-        match self.current.to_lowercase().as_str() {
-            "create" => self.tokens.push(Token::Create),
-            "table" => self.tokens.push(Token::Table),
-            "true" => self.tokens.push(Token::Bool(true)),
-            "false" => self.tokens.push(Token::Bool(false)),
-            ";" => self.tokens.push(Token::End),
-            _ => self.tokens.push(Token::Text(self.current.clone())),
+    fn get_token(&mut self) -> bool {
+        for regex_token in RegexToken::get_dict() {
+            if self.match_token(&regex_token) {
+                return true;
+            }
         }
+        for regex_token in RegexToken::get_literals() {
+            if self.match_token(&regex_token) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
-    fn process_char(&mut self, c: char) {
-        match c {
-            '(' => self.tokens.push(Token::OpenParen),
-            ')' => self.tokens.push(Token::CloseParen),
-            ',' => self.tokens.push(Token::Comma),
-            _ => (),
+    fn match_token(&mut self, regex_token: &RegexToken) -> bool {
+        let str = &self.source[self.pos..];
+        let prefix_match = self.get_prefix_match(&str, &regex_token.regex.clone());
+        if let Some(end) = prefix_match {
+            if let Some(token) = &regex_token.token {
+                let tok = token.clone();
+                match tok {
+                    Token::Text(_) => {
+                        self.tokens.push(Token::Text(str[..end].to_string()));
+                    }
+                    Token::Int(_) => {
+                        let val = str[..end].parse::<i32>().unwrap();
+                        self.tokens.push(Token::Int(val));
+                    }
+                    Token::Float(_) => {
+                        let val = str[..end].parse::<f32>().unwrap();
+                        self.tokens.push(Token::Float(val));
+                    }
+                    _ => self.tokens.push(tok),
+                }
+            }
+            self.pos += end;
+            return true;
         }
+
+        return false;
+    }
+
+    fn get_prefix_match(&self, str: &str, regex: &Regex) -> Option<usize> {
+        return regex
+            .captures(str)
+            .and_then(|cap| cap.get(0))
+            .map(|m| m.end());
     }
 }
 
@@ -72,22 +97,22 @@ mod scanner_tests {
             Token::Text("test".to_string()),
             Token::OpenParen,
             Token::Text("id".to_string()),
-            Token::Type_Int,
+            Token::TypeInt,
             Token::Comma,
             Token::Text("name".to_string()),
-            Token::Type_Varchar,
+            Token::TypeVarchar,
             Token::OpenParen,
-            Token::Text("255".to_string()),
+            Token::Int(255),
             Token::CloseParen,
             Token::Comma,
             Token::Text("active".to_string()),
-            Token::Type_Bool,
+            Token::TypeBool,
             Token::CloseParen,
             Token::End,
         ];
 
         let mut scanner = Lexer::new(source);
-        let tokens = scanner.scan_tokens();
+        let tokens = scanner.get_tokens();
         assert_eq!(tokens, result);
     }
 }
