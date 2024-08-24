@@ -82,7 +82,7 @@ impl Lexer {
 }
 
 #[cfg(test)]
-mod scanner_tests {
+mod lexer_tests {
     use super::*;
 
     #[test]

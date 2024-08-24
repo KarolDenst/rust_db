@@ -1,3 +1,4 @@
+use lazy_static::lazy_static;
 use regex::Regex;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -29,6 +30,11 @@ pub struct RegexToken {
     pub token: Option<Token>,
 }
 
+lazy_static! {
+    static ref REGEX_TOKENS: Vec<RegexToken> = RegexToken::init_dict();
+    static ref REGEX_LITERALS: Vec<RegexToken> = RegexToken::init_literals();
+}
+
 impl RegexToken {
     pub fn new(regex: &str, token: Token) -> RegexToken {
         RegexToken {
@@ -37,7 +43,15 @@ impl RegexToken {
         }
     }
 
-    pub fn get_dict() -> Vec<RegexToken> {
+    pub fn get_dict() -> &'static Vec<RegexToken> {
+        &REGEX_TOKENS
+    }
+
+    pub fn get_literals() -> &'static Vec<RegexToken> {
+        &REGEX_LITERALS
+    }
+
+    fn init_dict() -> Vec<RegexToken> {
         vec![
             // Whitespace
             RegexToken {
@@ -58,7 +72,7 @@ impl RegexToken {
         ]
     }
 
-    pub fn get_literals() -> Vec<RegexToken> {
+    fn init_literals() -> Vec<RegexToken> {
         vec![
             RegexToken {
                 regex: Regex::new(r"^\d+").unwrap(),
