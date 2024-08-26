@@ -1,15 +1,21 @@
 use lazy_static::lazy_static;
 use regex::Regex;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Token {
     // Keywords
     Create,
+    Insert,
+    Into,
+    Values,
+    Select,
+    From,
     Table,
     OpenParen,
     CloseParen,
     Comma,
     End,
+    Star,
 
     // Types
     TypeVarchar,
@@ -19,7 +25,7 @@ pub enum Token {
 
     // Literals
     Int(i32),
-    Float(f32),
+    Name(String),
     Text(String),
     Bool(bool),
 }
@@ -61,10 +67,16 @@ impl RegexToken {
             // Keywords
             RegexToken::new(r"^CREATE", Token::Create),
             RegexToken::new(r"^TABLE", Token::Table),
+            RegexToken::new(r"^INSERT", Token::Insert),
+            RegexToken::new(r"^INTO", Token::Into),
+            RegexToken::new(r"^VALUES", Token::Values),
+            RegexToken::new(r"^SELECT", Token::Select),
+            RegexToken::new(r"^FROM", Token::From),
             RegexToken::new(r"^\(", Token::OpenParen),
             RegexToken::new(r"^\)", Token::CloseParen),
             RegexToken::new(r"^,", Token::Comma),
             RegexToken::new(r"^;", Token::End),
+            RegexToken::new(r"^\*", Token::Star),
             RegexToken::new(r"^VARCHAR", Token::TypeVarchar),
             RegexToken::new(r"^INT", Token::TypeInt),
             RegexToken::new(r"^FLOAT", Token::TypeFloat),
@@ -78,10 +90,10 @@ impl RegexToken {
                 regex: Regex::new(r"^\d+").unwrap(),
                 token: Some(Token::Int(0)),
             },
-            RegexToken {
-                regex: Regex::new(r"^\d+\.\d+").unwrap(),
-                token: Some(Token::Float(0.0)),
-            },
+            // RegexToken {
+            //     regex: Regex::new(r"^\d+\.\d+").unwrap(),
+            //     token: Some(Token::Float(0.0)),
+            // },
             RegexToken {
                 regex: Regex::new(r"^true").unwrap(),
                 token: Some(Token::Bool(true)),
@@ -92,6 +104,10 @@ impl RegexToken {
             },
             RegexToken {
                 regex: Regex::new(r"^[a-zA-Z_][a-zA-Z0-9_]*").unwrap(),
+                token: Some(Token::Name("".to_string())),
+            },
+            RegexToken {
+                regex: Regex::new(r"^'[a-zA-Z_][a-zA-Z0-9_]*'").unwrap(),
                 token: Some(Token::Text("".to_string())),
             },
         ]

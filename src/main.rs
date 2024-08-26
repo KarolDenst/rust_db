@@ -1,18 +1,31 @@
 // mod db;
+mod db;
 mod lang;
 
+use db::database::Database;
 use lang::grammar::program::Program;
-use lang::lexer::Lexer;
+use lang::lexer::get_tokens;
 
 fn main() {
-    let source = "
+    let create = "
             CREATE TABLE test (id INT, name VARCHAR(255), active BOOL);
         "
     .to_string();
+    let insert = "
+            INSERT INTO test VALUES (1, 'test', true), (2, 'test2', false);
+        "
+    .to_string();
+    let select = "
+            SELECT * FROM test;
+        "
+    .to_string();
 
-    let mut scanner = Lexer::new(source);
-    let tokens = scanner.get_tokens();
-    let ast = Program::parse_tokens(&tokens);
-
-    println!("{:?}", ast);
+    let mut db = Database::new("test.db");
+    println!("Creating tables...");
+    Program::parse_tokens(&get_tokens(create)).execute(&mut db);
+    println!("Inserting data...");
+    Program::parse_tokens(&get_tokens(insert)).execute(&mut db);
+    println!("Selecting data...");
+    Program::parse_tokens(&get_tokens(select)).execute(&mut db);
+    println!("Done!");
 }

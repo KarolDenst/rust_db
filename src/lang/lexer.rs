@@ -3,7 +3,12 @@ use crate::lang::token::Token;
 use super::token::RegexToken;
 use regex::Regex;
 
-pub struct Lexer {
+pub fn get_tokens(source: String) -> Vec<Token> {
+    let mut scanner = Lexer::new(source);
+    return scanner.get_tokens();
+}
+
+struct Lexer {
     source: String,
     pos: usize,
     tokens: Vec<Token>,
@@ -52,17 +57,20 @@ impl Lexer {
             if let Some(token) = &regex_token.token {
                 let tok = token.clone();
                 match tok {
+                    Token::Name(_) => {
+                        self.tokens.push(Token::Name(str[..end].to_string()));
+                    }
                     Token::Text(_) => {
-                        self.tokens.push(Token::Text(str[..end].to_string()));
+                        self.tokens.push(Token::Text(str[1..end - 1].to_string()));
                     }
                     Token::Int(_) => {
                         let val = str[..end].parse::<i32>().unwrap();
                         self.tokens.push(Token::Int(val));
                     }
-                    Token::Float(_) => {
-                        let val = str[..end].parse::<f32>().unwrap();
-                        self.tokens.push(Token::Float(val));
-                    }
+                    // Token::Float(_) => {
+                    //     let val = str[..end].parse::<f32>().unwrap();
+                    //     self.tokens.push(Token::Float(val));
+                    // }
                     _ => self.tokens.push(tok),
                 }
             }
@@ -94,25 +102,24 @@ mod lexer_tests {
         let result = vec![
             Token::Create,
             Token::Table,
-            Token::Text("test".to_string()),
+            Token::Name("test".to_string()),
             Token::OpenParen,
-            Token::Text("id".to_string()),
+            Token::Name("id".to_string()),
             Token::TypeInt,
             Token::Comma,
-            Token::Text("name".to_string()),
+            Token::Name("name".to_string()),
             Token::TypeVarchar,
             Token::OpenParen,
             Token::Int(255),
             Token::CloseParen,
             Token::Comma,
-            Token::Text("active".to_string()),
+            Token::Name("active".to_string()),
             Token::TypeBool,
             Token::CloseParen,
             Token::End,
         ];
 
-        let mut scanner = Lexer::new(source);
-        let tokens = scanner.get_tokens();
+        let tokens = get_tokens(source);
         assert_eq!(tokens, result);
     }
 }

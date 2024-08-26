@@ -1,10 +1,12 @@
 use crate::lang::token::Token;
 
 use super::{column_def::ColumnDef, interface::Parsable};
+use derive_more::Constructor;
 
-#[derive(Clone, Debug, PartialEq)]
-pub enum TableDef {
-    Table(String, Vec<ColumnDef>),
+#[derive(Clone, Debug, PartialEq, Constructor)]
+pub struct TableDef {
+    pub name: String,
+    pub columns: Vec<ColumnDef>,
 }
 
 impl Parsable for TableDef {
@@ -12,7 +14,7 @@ impl Parsable for TableDef {
         let mut count: usize = 0;
         let mut columns: Vec<ColumnDef> = Vec::new();
         let table_name: String;
-        if let Token::Text(name) = tokens[0].clone() {
+        if let Token::Name(name) = tokens[0].clone() {
             count += 1;
             table_name = name.clone();
         } else {
@@ -26,7 +28,7 @@ impl Parsable for TableDef {
         loop {
             let toks = &tokens[count..];
             match toks {
-                [Token::Text(_), ..] => {
+                [Token::Name(_), ..] => {
                     let (n, col_) = ColumnDef::parse(toks);
                     count += n;
                     columns.push(col_);
@@ -43,6 +45,12 @@ impl Parsable for TableDef {
                 }
             }
         }
-        return (count, TableDef::Table(table_name, columns));
+        return (
+            count,
+            TableDef {
+                name: table_name,
+                columns,
+            },
+        );
     }
 }

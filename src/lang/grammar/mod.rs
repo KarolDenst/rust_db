@@ -1,6 +1,10 @@
-mod column_def;
-mod create;
-mod interface;
+pub mod column_def;
+pub mod create;
+pub mod insert;
+pub mod interface;
+pub mod literal;
 pub mod program;
-mod table_def;
-mod r#type;
+pub mod row;
+pub mod select;
+pub mod table_def;
+pub mod r#type;
