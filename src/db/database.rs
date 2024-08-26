@@ -36,7 +36,7 @@ impl Database {
             .find(|table| table.name == table_name);
         match table {
             Some(table) => {
-                table.insert(data);
+                table.insert(data)?;
                 Ok(())
             }
             None => Err(format!("Table {} does not exist", table_name)),
@@ -47,7 +47,7 @@ impl Database {
         let table = self.tables.iter().find(|table| table.name == table_name);
         match table {
             Some(table) => {
-                table.select();
+                table.select()?;
                 Ok(())
             }
             None => Err(format!("Table {} does not exist", table_name)),

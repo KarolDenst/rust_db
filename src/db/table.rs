@@ -22,9 +22,15 @@ impl Table {
     }
 
     pub fn select(&self) -> Result<(), String> {
-        println!("{:?}", self.columns);
+        for (i, val) in self.columns.iter().enumerate() {
+            if i > 0 {
+                print!("|");
+            }
+            print!("{}", val);
+        }
+        println!();
         for row in &self.rows {
-            println!("{:?}", row);
+            println!("{}", row);
         }
         return Ok(());
     }

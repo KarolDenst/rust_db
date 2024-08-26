@@ -1,3 +1,5 @@
+use std::fmt;
+
 use crate::lang::token::Token;
 use derive_more::Constructor;
 
@@ -26,5 +28,11 @@ impl Parsable for ColumnDef {
                 panic!("Unexpected token: {:?}", tokens[0]);
             }
         }
+    }
+}
+
+impl fmt::Display for ColumnDef {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.name)
     }
 }

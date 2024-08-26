@@ -21,11 +21,7 @@ fn main() {
     .to_string();
 
     let mut db = Database::new("test.db");
-    println!("Creating tables...");
     Program::parse_tokens(&get_tokens(create)).execute(&mut db);
-    println!("Inserting data...");
     Program::parse_tokens(&get_tokens(insert)).execute(&mut db);
-    println!("Selecting data...");
     Program::parse_tokens(&get_tokens(select)).execute(&mut db);
-    println!("Done!");
 }

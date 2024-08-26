@@ -1,3 +1,5 @@
+use std::fmt;
+
 use derive_more::derive::Constructor;
 
 use crate::{db::database::Database, lang::token::Token};
@@ -39,5 +41,17 @@ impl Parsable for Row {
             }
         }
         return (count, Row { values });
+    }
+}
+
+impl fmt::Display for Row {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        for (i, val) in self.values.iter().enumerate() {
+            if i > 0 {
+                write!(f, "|")?;
+            }
+            write!(f, "{}", val)?;
+        }
+        return Ok(());
     }
 }
